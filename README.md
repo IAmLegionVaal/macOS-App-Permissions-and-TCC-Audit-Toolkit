@@ -1,34 +1,47 @@
 # macOS App Permissions and TCC Audit Toolkit
 
-A read-only Bash toolkit for auditing macOS privacy-permission indicators for camera, microphone, screen recording, accessibility, automation, location, and Full Disk Access.
+This toolkit audits macOS application permission records and provides a supported reset workflow for individual applications.
 
-## Usage
+## Audit
 
 ```bash
 chmod +x src/tcc_permissions_audit.sh
 sudo ./src/tcc_permissions_audit.sh
 ```
 
-## Checks performed
+The audit reports database availability, permission records when accessible, application bundle identifiers and recent permission-service events.
 
-- User and system TCC database availability
-- Privacy-service authorization records when database access is permitted
-- Applications referenced by camera, microphone, screen capture, accessibility, Apple Events, location, and system-policy services
-- TCC database ownership, permissions, and modification times
-- Recent `tccd` and privacy-permission events
-- Text, CSV, and JSON reports
+## Repair
 
-## Access requirements
+Preview a camera permission reset:
 
-Reading the system or user TCC databases may require Full Disk Access. The script handles inaccessible databases without attempting to bypass macOS privacy protections.
+```bash
+chmod +x src/tcc_permissions_repair.sh
+./src/tcc_permissions_repair.sh --reset Camera --bundle-id us.zoom.xos --dry-run
+```
 
-## Safety
+Reset a microphone permission:
 
-The toolkit never grants, revokes, resets, or modifies privacy permissions and does not run `tccutil reset`.
+```bash
+./src/tcc_permissions_repair.sh --reset Microphone --bundle-id com.microsoft.teams2
+```
 
-## Privacy
+Reset all resettable decisions for one app:
 
-Reports can contain application bundle identifiers and permission decisions. Review them before sharing.
+```bash
+./src/tcc_permissions_repair.sh --reset-all --bundle-id com.example.app
+```
+
+## Repair behaviour
+
+- Uses the built-in `tccutil reset` command.
+- Targets a specific service and application bundle ID unless `--reset-all` is selected.
+- Refreshes the user permission service after the reset.
+- Supports confirmation, dry-run, logs and verification output.
+- Does not edit the permission databases directly.
+- Does not approve access automatically; the application must request access again.
+
+Some permission types still require manual approval in System Settings. Full Disk Access may be required to read all audit data.
 
 ## Author
 
